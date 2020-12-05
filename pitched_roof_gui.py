@@ -5,6 +5,7 @@ __url__ = "https://www.freecadweb.org"
 
 import FreeCADGui
 import FreeCAD
+import Part
 import Draft_rc
 import ArchComponent
 
@@ -26,7 +27,16 @@ class Roof3D:
         sel = FreeCADGui.Selection.getSelectionEx()
         if sel:
             sel = sel[0]
-            base_obj = sel.Object
+            obj = sel.Object
+            if obj.isDerivedFrom("Part::Part2DObjectPython"):
+                base_obj = obj
+            elif obj.isDerivedFrom("Sketcher::SketchObject"):
+                w = Part.Wire(obj.Shape.Edges)
+                f = Part.Face(w)
+                base_obj = FreeCAD.ActiveDocument.addObject("Part::Part2DObjectPython", "wire")
+                base_obj.Shape = f
+                base_obj.ViewObject.Proxy = 0
+                FreeCAD.ActiveDocument.removeObject(obj.Name)
             FreeCADGui.Control.closeDialog()
             roof3d.make_roof(base_obj)
         else:
