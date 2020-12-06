@@ -38,7 +38,12 @@ class Roof3d(ArchComponent.Component):
 	def execute(self, obj):
 
 		if hasattr(obj, "Base") and obj.Base:
-			projection_face_points, wire_edges = extrude_pieces.create_3D_roof(obj.Base, obj.angle)
+			w = Part.Wire(obj.Base.Shape.Edges)
+			f = Part.Face(w)
+			base_obj = FreeCAD.ActiveDocument.addObject("Part::Part2DObjectPython", "wire")
+			base_obj.Shape = f
+			base_obj.ViewObject.Proxy = 0
+			projection_face_points, wire_edges = extrude_pieces.create_3D_roof(base_obj, obj.angle)
 
 			faces = []
 			for points in projection_face_points:
@@ -55,6 +60,7 @@ class Roof3d(ArchComponent.Component):
 			shell = Part.Shell(faces)
 			obj.Shape = shell.removeSplitter()
 			obj.Base.ViewObject.Visibility = False
+			FreeCAD.ActiveDocument.removeObject(base_obj.Name)
 		else:
 			return
 

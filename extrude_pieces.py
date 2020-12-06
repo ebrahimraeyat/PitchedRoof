@@ -57,7 +57,6 @@ def create_3D_roof(wire=None, angle=25):
 	if not wire:
 		wire = FreeCADGui.Selection.getSelectionEx()[0].Object
 	edges = roof_poly.get_skeleton_of_roof(wire)
-	# wire = Draft.draftify(wire, delete=True)
 	faces = split(wire.Shape, edges)
 
 	slice_and_correspond_edge = find_wire_edges_common_with_group_object(wire, faces)
