@@ -56,6 +56,7 @@ def split(base_shape, tool_shapes, tolerance = 0.0):
 def create_3D_roof(wire=None, angle=25):
 	if not wire:
 		wire = FreeCADGui.Selection.getSelectionEx()[0].Object
+	base_level = wire.Placement.Base.z
 	edges = roof_poly.get_skeleton_of_roof(wire)
 	faces = split(wire.Shape, edges)
 
@@ -74,7 +75,7 @@ def create_3D_roof(wire=None, angle=25):
 				h = 0
 			else:
 				h = dist * math.tan(angle * math.pi / 180)
-			p = (point.x, point.y, h)
+			p = (point.x, point.y, h + base_level)
 			new_points.append(p)
 		projection_face_points.append(new_points)
 	wire_edges = [i[1] for i in slice_and_correspond_edge]

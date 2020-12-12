@@ -18,12 +18,12 @@ def get_skeleton_of_roof(sketch=None):
 
 	skeleton = polyskel.skeletonize(poly, [])
 	lines = []
-	h = 0
+	h = sketch.Placement.Base.z
 	for arc in skeleton:
 		for sink in arc.sinks:
 			if arc.source.x == sink.x and arc.source.y == sink.y:
 				continue
-			line = Part.makeLine((arc.source.x + x_plus, arc.source.y + y_plus, 0), 
+			line = Part.makeLine((arc.source.x + x_plus, arc.source.y + y_plus, h), 
 							(sink.x + x_plus, sink.y + y_plus, h))
 			lines.append(line)
 	return lines
