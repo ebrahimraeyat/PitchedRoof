@@ -53,11 +53,12 @@ def split(base_shape, tool_shapes, tolerance = 0.0):
     shps = sh.childShapes()
     return shps
 
-def create_3D_roof(wire=None, angle=25):
+def create_3D_roof(wire=None, angle=25, edges=[]):
 	if not wire:
 		wire = FreeCADGui.Selection.getSelectionEx()[0].Object
 	base_level = wire.Placement.Base.z
-	edges = roof_poly.get_skeleton_of_roof(wire)
+	if not edges:
+		edges = roof_poly.get_skeleton_of_roof(wire)
 	faces = split(wire.Shape, edges)
 
 	slice_and_correspond_edge = find_wire_edges_common_with_group_object(wire, faces)
