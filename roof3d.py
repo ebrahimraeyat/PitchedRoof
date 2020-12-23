@@ -31,6 +31,20 @@ class Roof3d(ArchComponent.Component):
 				"Roof",
 				)
 
+		if not hasattr(obj, "edegs_height"):
+			obj.addProperty(
+				"App::PropertyFloatList",
+				"edegs_height",
+				"Edges",
+				)
+
+		if not hasattr(obj, "n"):
+			obj.addProperty(
+				"App::PropertyInteger",
+				"n",
+				"Edges",
+				)
+
 	def onDocumentRestored(self, obj):
 		super().onDocumentRestored(obj)
 		self.setProperties(obj)
@@ -38,15 +52,38 @@ class Roof3d(ArchComponent.Component):
 	def execute(self, obj):
 
 		if hasattr(obj, "Base") and obj.Base:
-			w = Part.Wire(obj.Base.Shape.Edges)
+			edges = obj.Base.Shape.Edges
+			obj.n = len(edges)
+			w = Part.Wire(edges)
 			f = Part.Face(w)
 			base_obj = FreeCAD.ActiveDocument.addObject("Part::Part2DObjectPython", "wire")
 			base_obj.Shape = f
 			base_obj.ViewObject.Proxy = 0
 			projection_face_points, wire_edges = extrude_pieces.create_3D_roof(base_obj, obj.angle)
 
+			if len(obj.edegs_height) > obj.n:
+				edegs_height = obj.edegs_height
+				obj.edegs_height = edegs_height[:obj.n]
+			elif len(obj.edegs_height) < obj.n:
+				edegs_height = obj.edegs_height
+				edegs_height += [0 for i in range(obj.n - len(obj.edegs_height))]
+				obj.edegs_height = edegs_height
+
 			faces = []
-			for points in projection_face_points:
+			if len(set(obj.edegs_height)) > 1:
+				bb = w.BoundBox
+				xmin, xmax, ymin, ymax = bb.XMin, bb.XMax, bb.YMin, bb.YMax
+				p1 = (xmin, ymin, 0)
+				p2 = (xmax, ymin, 0)
+				p3 = (xmax, ymax, 0)
+				p4 = (xmin, ymax, 0)
+				e1 = Part.makeLine(p1, p2)
+				e2 = Part.makeLine(p2, p3)
+				e3 = Part.makeLine(p3, p4)
+				e4 = Part.makeLine(p4, p1)
+				wire = Part.Wire([e1, e2, e3, e4])
+				cut_face = Part.Face(wire)
+			for j, points in enumerate(projection_face_points):
 				n = len(points)
 				points.append(points[0])
 				edges = []
@@ -55,7 +92,19 @@ class Roof3d(ArchComponent.Component):
 					edges.append(e)
 				wire = Part.Wire(edges)
 				face = Part.Face(wire)
+				if len(set(obj.edegs_height)) > 1:
+					h = obj.edegs_height[j]
+					if h > 0:
+						f = cut_face.copy()
+						f.Placement.Base.z = h
+						sh = extrude_pieces.split(face, [f])
+						for cutted_face in sh:
+							if cutted_face.BoundBox.ZMax > h + 1:
+								face = cutted_face
+								break
+
 				faces.append(face)
+
 			obj.face_compound = Part.makeCompound(faces)
 			shell = Part.Shell(faces)
 			obj.Shape = shell.removeSplitter()
