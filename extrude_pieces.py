@@ -1,3 +1,4 @@
+from typing import List, Tuple, Iterable
 import FreeCAD
 import FreeCADGui
 import Draft
@@ -53,12 +54,25 @@ def split(base_shape, tool_shapes, tolerance = 0.0):
     shps = sh.childShapes()
     return shps
 
+def unique_points_of_edges_list(
+	edges: List
+	) -> Iterable[Tuple]:
+
+	points = set()
+	for e in edges:
+		p1 = e.firstVertex().Point
+		p2 = e.lastVertex().Point
+		points.add(tuple(p1))
+		points.add(tuple(p2))
+	return list(points)
+
 def create_3D_roof(wire=None, angle=25, edges=[]):
 	if not wire:
 		wire = FreeCADGui.Selection.getSelectionEx()[0].Object
 	base_level = wire.Placement.Base.z
 	if not edges:
 		edges = roof_poly.get_skeleton_of_roof(wire)
+	interior_points = unique_points_of_edges_list(edges)
 	faces = split(wire.Shape, edges)
 
 	slice_and_correspond_edge = find_wire_edges_common_with_group_object(wire, faces)
@@ -80,10 +94,10 @@ def create_3D_roof(wire=None, angle=25, edges=[]):
 			new_points.append(p)
 		projection_face_points.append(new_points)
 	wire_edges = [i[1] for i in slice_and_correspond_edge]
-	return projection_face_points, wire_edges
+	return projection_face_points, wire_edges, interior_points
 
 if __name__ == '__main__':
-	projection_face_points = create_3D_roof()
+	projection_face_points, _, _ = create_3D_roof()
 	for points in projection_face_points[0]:
 		w = Draft.makeWire(points, closed=True, face=True)
 		w.ViewObject.ShapeColor = (0.14,0.07,0.85)
