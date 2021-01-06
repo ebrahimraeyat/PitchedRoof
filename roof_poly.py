@@ -6,15 +6,13 @@ import Part
 def get_skeleton_of_roof(sketch=None):
 	if not sketch:
 		sketch = FreeCADGui.Selection.getSelection()[0]
-	x_plus = sketch.Shape.BoundBox.XMin
-	y_plus = sketch.Shape.BoundBox.YMin
 	es = sketch.Shape.Wires[0].Edges
 	es = Part.__sortEdges__(es)
 
 	poly = []
 	for e in es:
 		v1 = e.firstVertex()
-		poly.append((v1.X - x_plus, v1.Y - y_plus))
+		poly.append((v1.X, v1.Y))
 
 	skeleton = polyskel.skeletonize(poly, [])
 	lines = []
@@ -23,8 +21,8 @@ def get_skeleton_of_roof(sketch=None):
 		for sink in arc.sinks:
 			if arc.source.x == sink.x and arc.source.y == sink.y:
 				continue
-			line = Part.makeLine((arc.source.x + x_plus, arc.source.y + y_plus, h), 
-							(sink.x + x_plus, sink.y + y_plus, h))
+			line = Part.makeLine((arc.source.x, arc.source.y, h), 
+							(sink.x, sink.y, h))
 			lines.append(line)
 	return lines
 
