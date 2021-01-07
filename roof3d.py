@@ -38,6 +38,13 @@ class Roof3d(ArchComponent.Component):
 				"Edges",
 				)
 
+		if not hasattr(obj, "gable_edges"):
+			obj.addProperty(
+				"App::PropertyIntegerList",
+				"gable_edges",
+				"Edges",
+				)
+
 		if not hasattr(obj, "n"):
 			obj.addProperty(
 				"App::PropertyInteger",
@@ -59,7 +66,7 @@ class Roof3d(ArchComponent.Component):
 			base_obj = FreeCAD.ActiveDocument.addObject("Part::Part2DObjectPython", "wire")
 			base_obj.Shape = f
 			base_obj.ViewObject.Proxy = 0
-			projection_face_points, wire_edges, interior_points = extrude_pieces.create_3D_roof(base_obj, obj.angle)
+			projection_face_points, wire_edges, interior_points = extrude_pieces.create_3D_roof(base_obj, obj.angle, obj.gable_edges)
 
 			if len(obj.edegs_height) > obj.n:
 				edegs_height = obj.edegs_height

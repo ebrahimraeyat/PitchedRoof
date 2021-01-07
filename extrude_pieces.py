@@ -66,12 +66,17 @@ def unique_points_of_edges_list(
 		points.add(tuple(p2))
 	return list(points)
 
-def create_3D_roof(wire=None, angle=25, edges=[]):
+def create_3D_roof(
+		wire=None,
+		angle=25,
+		edges=[],
+		gable_edges=None,
+		):
 	if not wire:
 		wire = FreeCADGui.Selection.getSelectionEx()[0].Object
 	base_level = wire.Placement.Base.z
 	if not edges:
-		edges = roof_poly.get_skeleton_lines_of_roof(wire)
+		edges = roof_poly.get_skeleton_lines_of_roof(wire, gable_edges)
 	interior_points = unique_points_of_edges_list(edges)
 	faces = split(wire.Shape, edges)
 
