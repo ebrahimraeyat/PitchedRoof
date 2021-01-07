@@ -15,6 +15,11 @@ def get_skeleton_of_roof(sketch=None):
 		poly.append((v1.X, v1.Y))
 
 	skeleton = polyskel.skeletonize(poly, [])
+	return skeleton
+
+def get_skeleton_lines_of_roof(sketch=None):
+
+	skeleton = get_skeleton_of_roof(sketch)
 	lines = []
 	h = sketch.Placement.Base.z
 	for arc in skeleton:
