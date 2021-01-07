@@ -20,7 +20,7 @@ def get_skeleton_of_roof(sketch=None):
 
 def get_gable_edges(sketch, gables):
 	gable_edges = []
-	dges = sketch.Shape.Edges
+	edges = sketch.Shape.Edges
 	if gables:
 		for e, g in zip(edges, gables):
 			if g:
@@ -49,17 +49,19 @@ def is_sinks_points_in_gables(sinks, gable_edges=None):
 	return False
 
 
-def get_skeleton_lines_of_roof(sketch=None, gable_edges=None):
+def get_skeleton_lines_of_roof(sketch=None, gables=None):
 
 	skeleton = get_skeleton_of_roof(sketch)
 	lines = []
 	h = sketch.Placement.Base.z
+	gable_edges = get_gable_edges(sketch, gables)
 	for arc in skeleton:
 		e = is_sinks_points_in_gables(arc.sinks, gable_edges)
 		if e:
 			mid_point = e.CenterOfMass
 			arc.source.x = mid_point.x
 			arc.source.y = mid_point.y
+			continue
 
 		for sink in arc.sinks:
 			if arc.source.x == sink.x and arc.source.y == sink.y:
