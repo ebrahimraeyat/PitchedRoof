@@ -3,7 +3,6 @@ import Part
 import ArchComponent
 import Arch_rc
 
-import polyskel
 import extrude_pieces
 
 class Roof3d(ArchComponent.Component):
