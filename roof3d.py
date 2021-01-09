@@ -32,6 +32,13 @@ class Roof3d(ArchComponent.Component):
 				"Roof",
 				)
 
+		if not hasattr(obj, "angles"):
+			obj.addProperty(
+				"App::PropertyIntegerList",
+				"angles",
+				"Edges",
+				)
+
 		if not hasattr(obj, "face_compound"):
 			obj.addProperty(
 				"Part::PropertyPartShape",
@@ -78,6 +85,9 @@ class Roof3d(ArchComponent.Component):
 
 			edegs_height = obj.edegs_height
 			obj.edegs_height = adjust_list_len(edegs_height, obj.n, 0)
+
+			edges_angle = obj.angles
+			obj.angles = adjust_list_len(edges_angle, obj.n, int(obj.angle.Value))
 
 			faces = []
 			if len(set(obj.edegs_height)) > 1:
