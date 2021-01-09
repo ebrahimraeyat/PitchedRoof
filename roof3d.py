@@ -5,6 +5,15 @@ import Arch_rc
 
 import extrude_pieces
 
+
+def adjust_list_len (lst, n, val):
+	if len(lst) > n:
+		new_lst = lst[:n]
+	else:
+		new_lst = lst + [val for i in range(n - len(lst))]
+	return new_lst
+
+
 class Roof3d(ArchComponent.Component):
 
 	def __init__(self, obj):
@@ -67,15 +76,8 @@ class Roof3d(ArchComponent.Component):
 			base_obj.ViewObject.Proxy = 0
 			projection_face_points, wire_edges = extrude_pieces.create_3D_roof(base_obj, obj.angle, [], obj.gables)
 
-			if len(obj.edegs_height) > obj.n:
-				edegs_height = obj.edegs_height
-				obj.edegs_height = edegs_height[:obj.n]
-			elif len(obj.edegs_height) < obj.n:
-				edegs_height = obj.edegs_height
-				edegs_height += [0 for i in range(obj.n - len(obj.edegs_height))]
-				obj.edegs_height = edegs_height
-			# if len(obj.gables) < obj.n:
-			# 	obj.gables = [1] * obj.n
+			edegs_height = obj.edegs_height
+			obj.edegs_height = adjust_list_len(edegs_height, obj.n, 0)
 
 			faces = []
 			if len(set(obj.edegs_height)) > 1:
