@@ -75,8 +75,8 @@ class Roof3d(ArchComponent.Component):
 				edegs_height = obj.edegs_height
 				edegs_height += [0 for i in range(obj.n - len(obj.edegs_height))]
 				obj.edegs_height = edegs_height
-			if len(obj.gables) < obj.n:
-				obj.gables = [1] * obj.n
+			# if len(obj.gables) < obj.n:
+			# 	obj.gables = [1] * obj.n
 
 			faces = []
 			if len(set(obj.edegs_height)) > 1:
@@ -117,7 +117,10 @@ class Roof3d(ArchComponent.Component):
 			obj.face_compound = Part.makeCompound(faces)
 			shell = Part.Shell(faces)
 			obj.Shape = shell.removeSplitter()
-			obj.Base.ViewObject.Visibility = False
+			# obj.Base.ViewObject.Visibility = False
+			# obj.Base.ViewObject.LineColor = (1.00,0.00,0.00)
+			obj.Base.ViewObject.LineWidth = .5
+
 			FreeCAD.ActiveDocument.removeObject(base_obj.Name)
 		else:
 			return

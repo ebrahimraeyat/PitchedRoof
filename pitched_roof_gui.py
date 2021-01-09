@@ -73,11 +73,46 @@ class PitchedRoofSketch:
         FreeCADGui.runCommand('Sketcher_CreatePolyline',0)
 
 
+class GableEdges:
+
+
+    def GetResources(self):
+
+        return {'Pixmap'  : os.path.join(os.path.dirname(__file__), "resources", "icons", "Sketch.svg"),
+                'MenuText': "Gable",
+                'ToolTip' : "Change the selected edges to gable",
+                'Accel'   : 'g,e'}
+
+    def IsActive(self):
+        return not FreeCAD.ActiveDocument is None
+
+    def Activated(self):
+
+        # import FreeCADGui
+        roof = FreeCAD.ActiveDocument.Roof
+        # roof.ViewObject.Visibility = False
+        # roof.Base.ViewObject.Visibility = True
+        # FreeCADGui.ActiveDocument.ActiveView.viewTop()
+        sel = FreeCADGui.Selection.getSelectionEx()[0]
+        edges_name = sel.SubElementNames
+        edges_number = []
+        for name in edges_name:
+            if "Edge" in name:
+                edges_number.append(int(name.lstrip("Edge")))
+        new_edges = set(roof.gables).union(edges_number)
+        roof.gables = list(new_edges)
+        FreeCAD.ActiveDocument.recompute()
+
+
+
+
 FreeCADGui.addCommand("pitched_roof_sketch", PitchedRoofSketch())
 FreeCADGui.addCommand("pitched_roof_create_3d", Roof3D())
+FreeCADGui.addCommand("pitched_roof_gable", GableEdges())
 
 # List of all pitched roof commands
 PitchedRoofCommands = [
     "pitched_roof_sketch",
     "pitched_roof_create_3d",
+    "pitched_roof_gable",
 ]

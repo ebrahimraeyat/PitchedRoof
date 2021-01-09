@@ -22,9 +22,8 @@ def get_gable_edges(sketch, gables):
 	gable_edges = []
 	edges = sketch.Shape.Edges
 	if gables:
-		for e, g in zip(edges, gables):
-			if g:
-				gable_edges.append(e)
+		for i in gables:
+			gable_edges.append(edges[i - 1])
 	# gable_edges_xy_coordinate = []
 	# for e in gable_edges:
 	# 	p1 = e.firstVertex().Point
