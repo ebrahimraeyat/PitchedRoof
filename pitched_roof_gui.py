@@ -96,9 +96,15 @@ class GableEdges:
         sel = FreeCADGui.Selection.getSelectionEx()[0]
         edges_name = sel.SubElementNames
         edges_number = []
+
+        angles = roof.angles
         for name in edges_name:
             if "Edge" in name:
-                edges_number.append(int(name.lstrip("Edge")))
+                n = int(name.lstrip("Edge"))
+                edges_number.append(n)
+                angles[n - 1] = 90
+        roof.angles = angles
+
         new_edges = set(roof.gables).union(edges_number)
         roof.gables = list(new_edges)
         FreeCAD.ActiveDocument.recompute()

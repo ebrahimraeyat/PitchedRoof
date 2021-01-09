@@ -70,13 +70,13 @@ def create_3D_roof(
 		wire=None,
 		angle=25,
 		edges=[],
-		gables=None,
+		angles=None,
 		):
 	if not wire:
 		wire = FreeCADGui.Selection.getSelectionEx()[0].Object
 	base_level = wire.Placement.Base.z
 	if not edges:
-		edges = roof_poly.get_skeleton_lines_of_roof(wire, gables)
+		edges = roof_poly.get_skeleton_lines_of_roof(wire, angles)
 	# interior_points = unique_points_of_edges_list(edges)
 	faces = split(wire.Shape, edges)
 

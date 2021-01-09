@@ -81,7 +81,7 @@ class Roof3d(ArchComponent.Component):
 			base_obj = FreeCAD.ActiveDocument.addObject("Part::Part2DObjectPython", "wire")
 			base_obj.Shape = f
 			base_obj.ViewObject.Proxy = 0
-			projection_face_points, wire_edges = extrude_pieces.create_3D_roof(base_obj, obj.angle, [], obj.gables)
+			projection_face_points, wire_edges = extrude_pieces.create_3D_roof(base_obj, obj.angle, [], obj.angles)
 
 			edegs_height = obj.edegs_height
 			obj.edegs_height = adjust_list_len(edegs_height, obj.n, 0)

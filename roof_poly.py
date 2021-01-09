@@ -18,12 +18,13 @@ def get_skeleton_of_roof(sketch=None):
 	skeleton = polyskel.skeletonize(poly, [])
 	return skeleton
 
-def get_gable_edges(sketch, gables):
+def get_gable_edges(sketch, angles):
 	gable_edges = []
+	# print(f"angles = {angles}")
 	edges = sketch.Shape.Edges
-	if gables:
-		for i in gables:
-			gable_edges.append(edges[i - 1])
+	for e, angle in zip(edges, angles):
+		if angle == 90:
+			gable_edges.append(e)
 	# gable_edges_xy_coordinate = []
 	# for e in gable_edges:
 	# 	p1 = e.firstVertex().Point
@@ -48,12 +49,13 @@ def is_sinks_points_in_gables(sinks, gable_edges=None):
 	return False
 
 
-def get_skeleton_lines_of_roof(sketch=None, gables=None):
+def get_skeleton_lines_of_roof(sketch=None, angles=None):
 
 	skeleton = get_skeleton_of_roof(sketch)
 	lines = []
 	h = sketch.Placement.Base.z
-	gable_edges = get_gable_edges(sketch, gables)
+	gable_edges = get_gable_edges(sketch, angles)
+	# print(f"gable_edges = {gable_edges}")
 	for arc in skeleton:
 		e = is_sinks_points_in_gables(arc.sinks, gable_edges)
 		if e:
