@@ -4,6 +4,7 @@ import polyskel
 import Part
 import DraftVecUtils
 
+
 def get_skeleton_of_roof(sketch=None):
 	if not sketch:
 		sketch = FreeCADGui.Selection.getSelection()[0]
@@ -20,23 +21,26 @@ def get_skeleton_of_roof(sketch=None):
 
 def get_gable_edges(sketch, angles):
 	gable_edges = []
-	# print(f"angles = {angles}")
 	edges = sketch.Shape.Edges
 	for e, angle in zip(edges, angles):
 		if angle == 90:
 			gable_edges.append(e)
-	# gable_edges_xy_coordinate = []
-	# for e in gable_edges:
-	# 	p1 = e.firstVertex().Point
-	# 	p2 = e.lastVertex().Point
-	# 	gable_edges_xy_coordinate.append([(p1.x, p1.y), (p2.x, p2.y)])
 
 	return gable_edges
 
-def is_sinks_points_in_gables(sinks, gable_edges=None):
-	if not gable_edges or len(sinks) != 2:
+def get_negative_edges(sketch, angles):
+	negative_edges = []
+	edges = sketch.Shape.Edges
+	for e, angle in zip(edges, angles):
+		if angle < 0:
+			negative_edges.append(e)
+
+	return negative_edges
+
+def is_sinks_points_in_edges(sinks, edges=None):
+	if not edges or len(sinks) != 2:
 		return False
-	for e in gable_edges:
+	for e in edges:
 		p1, p2 = sinks
 		p1 = FreeCAD.Vector(p1.x, p1.y, 0)
 		p2 = FreeCAD.Vector(p2.x, p2.y, 0)
@@ -55,22 +59,27 @@ def get_skeleton_lines_of_roof(sketch=None, angles=None):
 	lines = []
 	h = sketch.Placement.Base.z
 	gable_edges = get_gable_edges(sketch, angles)
-	# print(f"gable_edges = {gable_edges}")
+	negative_edges = get_negative_edges(sketch, angles)
+	outer_points_edges = []
 	for arc in skeleton:
-		e = is_sinks_points_in_gables(arc.sinks, gable_edges)
-		if e:
-			mid_point = e.CenterOfMass
+		gable_e = is_sinks_points_in_edges(arc.sinks, gable_edges)
+		if gable_e:
+			print("find gable!")
+			mid_point = gable_e.CenterOfMass
 			arc.source.x = mid_point.x
 			arc.source.y = mid_point.y
 			continue
-
+		negative_edge = is_sinks_points_in_edges(arc.sinks, negative_edges)
+		if negative_edge:
+			p = FreeCAD.Vector(arc.source.x, arc.source.y, 0)
+			outer_points_edges.append([arc.source.x, arc.source.y, negative_edge])
 		for sink in arc.sinks:
 			if arc.source.x == sink.x and arc.source.y == sink.y:
 				continue
 			line = Part.makeLine((arc.source.x, arc.source.y, h), 
 							(sink.x, sink.y, h))
 			lines.append(line)
-	return lines
+	return lines, outer_points_edges
 
 
 if __name__ == '__main__':

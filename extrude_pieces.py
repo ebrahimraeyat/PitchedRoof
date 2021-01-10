@@ -4,10 +4,12 @@ import FreeCADGui
 import Draft
 import Part
 import draftgeoutils
+import DraftVecUtils
 import math
 from math import sqrt
 import roof_poly
 from GeneralFuseResult import GeneralFuseResult
+from pitched_roof_funcs import mirror_point_corresponding_to_edge_in_xy
 
 
 def find_wire_edges_common_with_group_object(wire, faces):
@@ -76,8 +78,7 @@ def create_3D_roof(
 		wire = FreeCADGui.Selection.getSelectionEx()[0].Object
 	base_level = wire.Placement.Base.z
 	if not edges:
-		edges = roof_poly.get_skeleton_lines_of_roof(wire, angles)
-	# interior_points = unique_points_of_edges_list(edges)
+		edges, outer_points_edges = roof_poly.get_skeleton_lines_of_roof(wire, angles)
 	faces = split(wire.Shape, edges)
 
 	slice_and_correspond_edge = find_wire_edges_common_with_group_object(wire, faces)
@@ -90,12 +91,20 @@ def create_3D_roof(
 			sort_points.append(p1)
 		new_points = []
 		for point in sort_points:
+			x, y = point.x, point.y
 			dist = distance(edge, point)
 			if not dist or dist < .1:
 				h = 0
 			else:
 				h = dist * math.tan(angle * math.pi / 180)
-			p = (point.x, point.y, h + base_level)
+			for out_point in outer_points_edges:
+				x1, y1, e = out_point
+				p2 = FreeCAD.Vector(x1, y1, 0)
+				if DraftVecUtils.equals(point, p2):
+					x, y = mirror_point_corresponding_to_edge_in_xy(
+						e, point
+						)
+			p = (x, y, h + base_level)
 			new_points.append(p)
 		projection_face_points.append(new_points)
 	wire_edges = [i[1] for i in slice_and_correspond_edge]
