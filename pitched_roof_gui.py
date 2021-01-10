@@ -110,15 +110,49 @@ class GableEdges:
         FreeCAD.ActiveDocument.recompute()
 
 
+class AngleEdges:
+
+    def GetResources(self):
+
+        return {'Pixmap'  : os.path.join(os.path.dirname(__file__), "resources", "icons", "Sketch.svg"),
+                'MenuText': "Angle",
+                'ToolTip' : "Change the angle of selected edges",
+                'Accel'   : 'a,e'}
+
+    def IsActive(self):
+        return not FreeCAD.ActiveDocument is None
+
+    def Activated(self):
+
+        # import FreeCADGui
+        roof = FreeCAD.ActiveDocument.Roof
+        # roof.ViewObject.Visibility = False
+        # roof.Base.ViewObject.Visibility = True
+        # FreeCADGui.ActiveDocument.ActiveView.viewTop()
+        sel = FreeCADGui.Selection.getSelectionEx()[0]
+        edges_name = sel.SubElementNames
+
+        angles = roof.angles
+        for name in edges_name:
+            if "Edge" in name:
+                n = int(name.lstrip("Edge"))
+                angles[n - 1] = -25
+        roof.angles = angles
+
+        FreeCAD.ActiveDocument.recompute()
+
+
 
 
 FreeCADGui.addCommand("pitched_roof_sketch", PitchedRoofSketch())
 FreeCADGui.addCommand("pitched_roof_create_3d", Roof3D())
 FreeCADGui.addCommand("pitched_roof_gable", GableEdges())
+FreeCADGui.addCommand("pitched_roof_angle", AngleEdges())
 
 # List of all pitched roof commands
 PitchedRoofCommands = [
     "pitched_roof_sketch",
     "pitched_roof_create_3d",
     "pitched_roof_gable",
+    "pitched_roof_angle",
 ]
