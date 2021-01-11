@@ -89,11 +89,14 @@ class GableEdges:
     def Activated(self):
 
         # import FreeCADGui
-        roof = FreeCAD.ActiveDocument.Roof
         # roof.ViewObject.Visibility = False
         # roof.Base.ViewObject.Visibility = True
         # FreeCADGui.ActiveDocument.ActiveView.viewTop()
         sel = FreeCADGui.Selection.getSelectionEx()[0]
+        base_obj = sel.Object
+        for obj in FreeCAD.ActiveDocument.Objects:
+            if hasattr(obj, "Base") and obj.Base == base_obj:
+                roof = obj
         edges_name = sel.SubElementNames
         edges_number = []
 
@@ -125,11 +128,14 @@ class AngleEdges:
     def Activated(self):
 
         # import FreeCADGui
-        roof = FreeCAD.ActiveDocument.Roof
         # roof.ViewObject.Visibility = False
         # roof.Base.ViewObject.Visibility = True
         # FreeCADGui.ActiveDocument.ActiveView.viewTop()
         sel = FreeCADGui.Selection.getSelectionEx()[0]
+        base_obj = sel.Object
+        for obj in FreeCAD.ActiveDocument.Objects:
+            if hasattr(obj, "Base") and obj.Base == base_obj:
+                roof = obj
         edges_name = sel.SubElementNames
 
         angles = roof.angles

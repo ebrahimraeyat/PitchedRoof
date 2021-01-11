@@ -3,7 +3,7 @@
 # import draftgeoutils
 # import DraftGeomUtils
 # import DraftVecUtils
-from extrude_pieces import distance
+# from extrude_pieces import distance
 
 def intersection_point_of_two_edges_in_xy_plane(e1, e2):
 	'''
