@@ -105,7 +105,10 @@ class GableEdges:
             if "Edge" in name:
                 n = int(name.lstrip("Edge"))
                 edges_number.append(n)
-                angles[n - 1] = 90
+                if angles[n - 1] == 90:
+                    angles[n - 1] = int(roof.angle.Value)
+                else:
+                    angles[n - 1] = 90
         roof.angles = angles
 
         new_edges = set(roof.gables).union(edges_number)
