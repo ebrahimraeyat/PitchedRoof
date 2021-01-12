@@ -68,7 +68,8 @@ def get_skeleton_lines_of_roof(sketch=None, angles=None):
 			mid_point = gable_e.CenterOfMass
 			arc.source.x = mid_point.x
 			arc.source.y = mid_point.y
-			continue
+			if len(arc.sinks) == 2:
+				continue
 		negative_edge = is_sinks_points_in_edges(arc.sinks, negative_edges)
 		if negative_edge:
 			p = FreeCAD.Vector(arc.source.x, arc.source.y, 0)
