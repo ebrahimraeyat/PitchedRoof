@@ -38,18 +38,19 @@ def get_negative_edges(sketch, angles):
 	return negative_edges
 
 def is_sinks_points_in_edges(sinks, edges=None):
-	if not edges or len(sinks) != 2:
+	if not edges:
 		return False
 	for e in edges:
-		p1, p2 = sinks
-		p1 = FreeCAD.Vector(p1.x, p1.y, 0)
-		p2 = FreeCAD.Vector(p2.x, p2.y, 0)
-		p3 = e.firstVertex().Point
-		p4 = e.lastVertex().Point
-
-		if (DraftVecUtils.equals(p1, p3) and DraftVecUtils.equals(p2, p4)) or \
-			(DraftVecUtils.equals(p2, p3) and DraftVecUtils.equals(p1, p4)):
+		p1 = e.firstVertex().Point
+		p2 = e.lastVertex().Point
+		common_points = []
+		for p in sinks:
+			p = FreeCAD.Vector(p.x, p.y, 0)
+			if DraftVecUtils.equals(p, p1) or DraftVecUtils.equals(p, p2):
+				common_points.append(p)
+		if len(common_points) == 2:
 			return e
+
 	return False
 
 
@@ -64,7 +65,6 @@ def get_skeleton_lines_of_roof(sketch=None, angles=None):
 	for arc in skeleton:
 		gable_e = is_sinks_points_in_edges(arc.sinks, gable_edges)
 		if gable_e:
-			print("find gable!")
 			mid_point = gable_e.CenterOfMass
 			arc.source.x = mid_point.x
 			arc.source.y = mid_point.y
