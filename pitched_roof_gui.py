@@ -145,7 +145,10 @@ class AngleEdges:
         for name in edges_name:
             if "Edge" in name:
                 n = int(name.lstrip("Edge"))
-                angles[n - 1] = -25
+                if angles[n - 1] < 0:
+                    angles[n - 1] = int(roof.angle.Value)
+                else:
+                    angles[n - 1] = -int(roof.angle.Value)
         roof.angles = angles
 
         FreeCAD.ActiveDocument.recompute()
