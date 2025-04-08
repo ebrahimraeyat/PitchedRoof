@@ -4,6 +4,14 @@ import polyskel
 import Part
 import DraftVecUtils
 
+def is_poly_clockwise(points):
+	area = 0.0
+	for i in range(len(points)):
+		p1 = points[i]
+		p2 = points[(i + 1) % len(points)]
+		area += (p2[0] - p1[0]) * (p2[1] + p1[1])
+
+	return area > 0
 
 def get_skeleton_of_roof(sketch=None):
 	if not sketch:
@@ -15,6 +23,9 @@ def get_skeleton_of_roof(sketch=None):
 	for e in es:
 		v1 = e.firstVertex()
 		poly.append((v1.X, v1.Y))
+
+	if not is_poly_clockwise(poly):
+		poly = list(reversed(poly))
 
 	skeleton = polyskel.skeletonize(poly, [])
 	return skeleton
