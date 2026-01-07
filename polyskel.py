@@ -7,7 +7,11 @@ paper Straight skeleton implementation.
 
 import logging
 import heapq
-from euclid3 import *
+try:
+	from euclid3 import *
+except ModuleNotFoundError:
+	from euclid import *
+
 from itertools import *
 from collections import namedtuple
 
