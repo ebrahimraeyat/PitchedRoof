@@ -11,7 +11,49 @@ import Draft
 import Draft_rc
 import ArchComponent
 
+try:
+    from PySide import QtWidgets
+except ImportError:
+    from PySide2 import QtWidgets
+
 import roof3d
+
+
+def show_warning(message, title="PitchedRoof"):
+    QtWidgets.QMessageBox.warning(
+        FreeCADGui.getMainWindow(),
+        title,
+        message,
+    )
+
+
+def get_roof_from_base_selection():
+    selection = FreeCADGui.Selection.getSelectionEx()
+    if not selection:
+        show_warning("Select one or more edges from the base sketch or wire of a roof.")
+        return None, None
+
+    sel = selection[0]
+    base_obj = sel.Object
+    edges_name = [name for name in sel.SubElementNames if "Edge" in name]
+
+    if not edges_name:
+        show_warning("Select one or more base edges before using this command.")
+        return None, None
+
+    roof = None
+    for obj in FreeCAD.ActiveDocument.Objects:
+        if hasattr(obj, "IfcType") and obj.IfcType == "Roof" and hasattr(obj, "Base") and obj.Base and obj.Base == base_obj:
+            roof = obj
+            break
+
+    if roof is None:
+        show_warning(
+            "Select edges from the roof base sketch or wire, not from the roof solid itself."
+        )
+        return None, None
+
+    return roof, edges_name
 
 
 class Roof3D:
@@ -92,12 +134,9 @@ class GableEdges:
         # roof.ViewObject.Visibility = False
         # roof.Base.ViewObject.Visibility = True
         # FreeCADGui.ActiveDocument.ActiveView.viewTop()
-        sel = FreeCADGui.Selection.getSelectionEx()[0]
-        base_obj = sel.Object
-        for obj in FreeCAD.ActiveDocument.Objects:
-            if hasattr(obj, "Base") and obj.Base == base_obj:
-                roof = obj
-        edges_name = sel.SubElementNames
+        roof, edges_name = get_roof_from_base_selection()
+        if roof is None:
+            return
         edges_number = []
 
         angles = roof.Angles
@@ -134,12 +173,9 @@ class AngleEdges:
         # roof.ViewObject.Visibility = False
         # roof.Base.ViewObject.Visibility = True
         # FreeCADGui.ActiveDocument.ActiveView.viewTop()
-        sel = FreeCADGui.Selection.getSelectionEx()[0]
-        base_obj = sel.Object
-        for obj in FreeCAD.ActiveDocument.Objects:
-            if hasattr(obj, "Base") and obj.Base == base_obj:
-                roof = obj
-        edges_name = sel.SubElementNames
+        roof, edges_name = get_roof_from_base_selection()
+        if roof is None:
+            return
 
         angles = roof.Angles
         for name in edges_name:
