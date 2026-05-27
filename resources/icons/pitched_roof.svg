@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" fill="none">
+  <defs>
+    <linearGradient id="roofFill" x1="12" y1="18" x2="52" y2="42" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#c63d2f"/>
+      <stop offset="1" stop-color="#8f2118"/>
+    </linearGradient>
+    <linearGradient id="wallFill" x1="18" y1="32" x2="46" y2="54" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#d9dee6"/>
+      <stop offset="1" stop-color="#b8c2d1"/>
+    </linearGradient>
+  </defs>
+
+  <path d="M10 31 32 12l22 19-3.3 3.8L32 18.8 13.3 34.8 10 31Z" fill="url(#roofFill)"/>
+  <path d="M18 30.5 32 18.5l14 12v21.5H18V30.5Z" fill="url(#wallFill)"/>
+  <path d="M15 31.5 32 17l17 14.5" stroke="#5b130d" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M20 52V31.2L32 21l12 10.2V52" stroke="#51606f" stroke-width="3.2" stroke-linejoin="round"/>
+  <path d="M28 52V40h8v12" stroke="#51606f" stroke-width="3.2" stroke-linejoin="round"/>
+  <path d="M24 37.5h16" stroke="#ffffff" stroke-opacity="0.55" stroke-width="2" stroke-linecap="round"/>
+  <path d="M22 41.5h20" stroke="#ffffff" stroke-opacity="0.4" stroke-width="1.8" stroke-linecap="round"/>
+</svg>

@@ -8,7 +8,7 @@ import FreeCADGui
 import pitched_roof_gui
 
 wb_icon_path = str(
-    Path(pitched_roof_gui.__file__).parent.absolute() / "resources" / "icons" / "pitched_roof.png"
+    Path(pitched_roof_gui.__file__).parent.absolute() / "resources" / "icons" / "pitched_roof.svg"
 )
 
 
