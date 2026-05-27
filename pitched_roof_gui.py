@@ -120,7 +120,7 @@ class GableEdges:
 
     def GetResources(self):
 
-        return {'Pixmap'  : os.path.join(os.path.dirname(__file__), "resources", "icons", "Sketch.svg"),
+        return {'Pixmap'  : os.path.join(os.path.dirname(__file__), "resources", "icons", "Gable.svg"),
                 'MenuText': "Gable",
                 'ToolTip' : "Change the selected edges to gable",
                 'Accel'   : 'g,e'}
@@ -159,7 +159,7 @@ class AngleEdges:
 
     def GetResources(self):
 
-        return {'Pixmap'  : os.path.join(os.path.dirname(__file__), "resources", "icons", "Sketch.svg"),
+        return {'Pixmap'  : os.path.join(os.path.dirname(__file__), "resources", "icons", "Angle.svg"),
                 'MenuText': "Angle",
                 'ToolTip' : "Change the angle of selected edges",
                 'Accel'   : 'a,e'}
