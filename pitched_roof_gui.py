@@ -100,19 +100,19 @@ class GableEdges:
         edges_name = sel.SubElementNames
         edges_number = []
 
-        angles = roof.angles
+        angles = roof.Angles
         for name in edges_name:
             if "Edge" in name:
                 n = int(name.lstrip("Edge"))
                 edges_number.append(n)
                 if angles[n - 1] == 90:
-                    angles[n - 1] = int(roof.angle.Value)
+                    angles[n - 1] = int(roof.Angle.Value)
                 else:
                     angles[n - 1] = 90
-        roof.angles = angles
+        roof.Angles = angles
 
-        new_edges = set(roof.gables).union(edges_number)
-        roof.gables = list(new_edges)
+        new_edges = set(roof.Gables).union(edges_number)
+        roof.Gables = list(new_edges)
         FreeCAD.ActiveDocument.recompute()
 
 
@@ -141,15 +141,15 @@ class AngleEdges:
                 roof = obj
         edges_name = sel.SubElementNames
 
-        angles = roof.angles
+        angles = roof.Angles
         for name in edges_name:
             if "Edge" in name:
                 n = int(name.lstrip("Edge"))
                 if angles[n - 1] < 0:
-                    angles[n - 1] = int(roof.angle.Value)
+                    angles[n - 1] = int(roof.Angle.Value)
                 else:
-                    angles[n - 1] = -int(roof.angle.Value)
-        roof.angles = angles
+                    angles[n - 1] = -int(roof.Angle.Value)
+        roof.Angles = angles
 
         FreeCAD.ActiveDocument.recompute()
 

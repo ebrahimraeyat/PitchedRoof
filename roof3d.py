@@ -6,12 +6,61 @@ import Arch_rc
 import extrude_pieces
 
 
+PROPERTY_DEFINITIONS = (
+	{
+		"name": "Angle",
+		"legacy_name": "angle",
+		"type": "App::PropertyAngle",
+		"group": "Roof",
+	},
+	{
+		"name": "Angles",
+		"legacy_name": "angles",
+		"type": "App::PropertyIntegerList",
+		"group": "Edges",
+	},
+	{
+		"name": "FaceCompound",
+		"legacy_name": "face_compound",
+		"type": "Part::PropertyPartShape",
+		"group": "Roof",
+	},
+	{
+		"name": "EdgesHeight",
+		"legacy_name": "edegs_height",
+		"type": "App::PropertyFloatList",
+		"group": "Edges",
+	},
+	{
+		"name": "Gables",
+		"legacy_name": "gables",
+		"type": "App::PropertyIntegerList",
+		"group": "Edges",
+	},
+	{
+		"name": "EdgeCount",
+		"legacy_name": "n",
+		"type": "App::PropertyInteger",
+		"group": "Edges",
+	},
+)
+
+
 def adjust_list_len (lst, n, val):
 	if len(lst) > n:
 		new_lst = lst[:n]
 	else:
 		new_lst = lst + [val for i in range(n - len(lst))]
 	return new_lst
+
+
+def has_property(obj, name):
+	return name in getattr(obj, "PropertiesList", [])
+
+
+def copy_property_value(obj, source_name, target_name):
+	if has_property(obj, source_name) and has_property(obj, target_name):
+		setattr(obj, target_name, getattr(obj, source_name))
 
 
 class Roof3d(ArchComponent.Component):
@@ -25,47 +74,29 @@ class Roof3d(ArchComponent.Component):
 	def set_properties(self, obj):
 		self.Type = "Roof3d"
 
-		if not hasattr(obj, "angle"):
-			obj.addProperty(
-				"App::PropertyAngle",
-				"angle",
-				"Roof",
-				)
+		for prop in PROPERTY_DEFINITIONS:
+			created = False
+			if not has_property(obj, prop["name"]):
+				obj.addProperty(
+					prop["type"],
+					prop["name"],
+					prop["group"],
+					)
+				created = True
 
-		if not hasattr(obj, "angles"):
-			obj.addProperty(
-				"App::PropertyIntegerList",
-				"angles",
-				"Edges",
-				)
+			legacy_name = prop["legacy_name"]
+			if has_property(obj, legacy_name):
+				if created:
+					copy_property_value(obj, legacy_name, prop["name"])
+				obj.setEditorMode(legacy_name, 2)
 
-		if not hasattr(obj, "face_compound"):
-			obj.addProperty(
-				"Part::PropertyPartShape",
-				"face_compound",
-				"Roof",
-				)
+		self.sync_legacy_properties(obj)
 
-		if not hasattr(obj, "edegs_height"):
-			obj.addProperty(
-				"App::PropertyFloatList",
-				"edegs_height",
-				"Edges",
-				)
-
-		if not hasattr(obj, "gables"):
-			obj.addProperty(
-				"App::PropertyIntegerList",
-				"gables",
-				"Edges",
-				)
-
-		if not hasattr(obj, "n"):
-			obj.addProperty(
-				"App::PropertyInteger",
-				"n",
-				"Edges",
-				)
+	def sync_legacy_properties(self, obj):
+		for prop in PROPERTY_DEFINITIONS:
+			legacy_name = prop["legacy_name"]
+			if has_property(obj, legacy_name):
+				copy_property_value(obj, prop["name"], legacy_name)
 
 	def onDocumentRestored(self, obj):
 		super().onDocumentRestored(obj)
@@ -75,22 +106,22 @@ class Roof3d(ArchComponent.Component):
 
 		if hasattr(obj, "Base") and obj.Base:
 			edges = obj.Base.Shape.Edges
-			obj.n = len(edges)
+			obj.EdgeCount = len(edges)
 			w = Part.Wire(edges)
 			f = Part.Face(w)
 			base_obj = FreeCAD.ActiveDocument.addObject("Part::Part2DObjectPython", "wire")
 			base_obj.Shape = f
 			base_obj.ViewObject.Proxy = 0
-			projection_face_points, wire_edges = extrude_pieces.create_3D_roof(base_obj, obj.angle, [], obj.angles)
+			projection_face_points, wire_edges = extrude_pieces.create_3D_roof(base_obj, obj.Angle, [], obj.Angles)
 
-			edegs_height = obj.edegs_height
-			obj.edegs_height = adjust_list_len(edegs_height, obj.n, 0)
+			edges_height = obj.EdgesHeight
+			obj.EdgesHeight = adjust_list_len(edges_height, obj.EdgeCount, 0)
 
-			edges_angle = obj.angles
-			obj.angles = adjust_list_len(edges_angle, obj.n, int(obj.angle.Value))
+			edges_angle = obj.Angles
+			obj.Angles = adjust_list_len(edges_angle, obj.EdgeCount, int(obj.Angle.Value))
 
 			faces = []
-			if len(set(obj.edegs_height)) > 1:
+			if len(set(obj.EdgesHeight)) > 1:
 				bb = w.BoundBox
 				xmin, xmax, ymin, ymax = bb.XMin, bb.XMax, bb.YMin, bb.YMax
 				p1 = (xmin, ymin, 0)
@@ -112,8 +143,8 @@ class Roof3d(ArchComponent.Component):
 					edges.append(e)
 				wire = Part.Wire(edges)
 				face = Part.Face(wire)
-				if len(set(obj.edegs_height)) > 1:
-					h = obj.edegs_height[j]
+				if len(set(obj.EdgesHeight)) > 1:
+					h = obj.EdgesHeight[j]
 					if h > 0:
 						f = cut_face.copy()
 						f.Placement.Base.z = h
@@ -125,9 +156,10 @@ class Roof3d(ArchComponent.Component):
 
 				faces.append(face)
 
-			obj.face_compound = Part.makeCompound(faces)
+			obj.FaceCompound = Part.makeCompound(faces)
 			shell = Part.Shell(faces)
 			obj.Shape = shell.removeSplitter()
+			self.sync_legacy_properties(obj)
 			# obj.Base.ViewObject.Visibility = False
 			# obj.Base.ViewObject.LineColor = (1.00,0.00,0.00)
 			obj.Base.ViewObject.LineWidth = .5
@@ -164,7 +196,7 @@ def make_roof(baseobj=None, angle=25, name="Roof"):
 		ViewProviderRoof3d(obj.ViewObject)
 	if baseobj:
 		obj.Base = baseobj
-	obj.angle = angle
+	obj.Angle = angle
 	FreeCAD.ActiveDocument.recompute()
 	return obj
 
