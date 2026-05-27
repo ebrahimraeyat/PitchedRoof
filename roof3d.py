@@ -63,6 +63,13 @@ def copy_property_value(obj, source_name, target_name):
 		setattr(obj, target_name, getattr(obj, source_name))
 
 
+class TemporaryWire:
+
+	def __init__(self, shape):
+		self.Shape = shape
+		self.Placement = FreeCAD.Placement()
+
+
 class Roof3d(ArchComponent.Component):
 
 	def __init__(self, obj):
@@ -105,66 +112,76 @@ class Roof3d(ArchComponent.Component):
 	def execute(self, obj):
 
 		if hasattr(obj, "Base") and obj.Base:
-			edges = obj.Base.Shape.Edges
-			obj.EdgeCount = len(edges)
-			w = Part.Wire(edges)
-			f = Part.Face(w)
-			base_obj = FreeCAD.ActiveDocument.addObject("Part::Part2DObjectPython", "wire")
-			base_obj.Shape = f
-			base_obj.ViewObject.Proxy = 0
-			projection_face_points, wire_edges = extrude_pieces.create_3D_roof(base_obj, obj.Angle, [], obj.Angles)
+			try:
+				edges = obj.Base.Shape.Edges
+				obj.EdgeCount = len(edges)
+				if obj.EdgeCount < 3:
+					raise ValueError("Base wire must contain at least three edges.")
 
-			edges_height = obj.EdgesHeight
-			obj.EdgesHeight = adjust_list_len(edges_height, obj.EdgeCount, 0)
+				w = Part.Wire(edges)
+				if not w.isClosed():
+					raise ValueError("Base wire must be closed.")
 
-			edges_angle = obj.Angles
-			obj.Angles = adjust_list_len(edges_angle, obj.EdgeCount, int(obj.Angle.Value))
+				base_face = Part.Face(w)
+				temporary_wire = TemporaryWire(base_face)
+				projection_face_points, wire_edges = extrude_pieces.create_3D_roof(
+					temporary_wire,
+					obj.Angle,
+					[],
+					obj.Angles,
+				)
 
-			faces = []
-			if len(set(obj.EdgesHeight)) > 1:
-				bb = w.BoundBox
-				xmin, xmax, ymin, ymax = bb.XMin, bb.XMax, bb.YMin, bb.YMax
-				p1 = (xmin, ymin, 0)
-				p2 = (xmax, ymin, 0)
-				p3 = (xmax, ymax, 0)
-				p4 = (xmin, ymax, 0)
-				e1 = Part.makeLine(p1, p2)
-				e2 = Part.makeLine(p2, p3)
-				e3 = Part.makeLine(p3, p4)
-				e4 = Part.makeLine(p4, p1)
-				wire = Part.Wire([e1, e2, e3, e4])
-				cut_face = Part.Face(wire)
-			for j, points in enumerate(projection_face_points):
-				n = len(points)
-				points.append(points[0])
-				edges = []
-				for i in range(n):
-					e = Part.makeLine(points[i], points[i + 1])
-					edges.append(e)
-				wire = Part.Wire(edges)
-				face = Part.Face(wire)
+				edges_height = obj.EdgesHeight
+				obj.EdgesHeight = adjust_list_len(edges_height, obj.EdgeCount, 0)
+
+				edges_angle = obj.Angles
+				obj.Angles = adjust_list_len(edges_angle, obj.EdgeCount, int(obj.Angle.Value))
+
+				faces = []
 				if len(set(obj.EdgesHeight)) > 1:
-					h = obj.EdgesHeight[j]
-					if h > 0:
-						f = cut_face.copy()
-						f.Placement.Base.z = h
-						sh = extrude_pieces.split(face, [f])
-						for cutted_face in sh:
-							if cutted_face.BoundBox.ZMax > h + 1:
-								face = cutted_face
-								break
+					bb = w.BoundBox
+					xmin, xmax, ymin, ymax = bb.XMin, bb.XMax, bb.YMin, bb.YMax
+					p1 = (xmin, ymin, 0)
+					p2 = (xmax, ymin, 0)
+					p3 = (xmax, ymax, 0)
+					p4 = (xmin, ymax, 0)
+					e1 = Part.makeLine(p1, p2)
+					e2 = Part.makeLine(p2, p3)
+					e3 = Part.makeLine(p3, p4)
+					e4 = Part.makeLine(p4, p1)
+					wire = Part.Wire([e1, e2, e3, e4])
+					cut_face = Part.Face(wire)
+				for j, points in enumerate(projection_face_points):
+					n = len(points)
+					points.append(points[0])
+					edges = []
+					for i in range(n):
+						e = Part.makeLine(points[i], points[i + 1])
+						edges.append(e)
+					wire = Part.Wire(edges)
+					face = Part.Face(wire)
+					if len(set(obj.EdgesHeight)) > 1:
+						h = obj.EdgesHeight[j]
+						if h > 0:
+							f = cut_face.copy()
+							f.Placement.Base.z = h
+							sh = extrude_pieces.split(face, [f])
+							for cutted_face in sh:
+								if cutted_face.BoundBox.ZMax > h + 1:
+									face = cutted_face
+									break
 
-				faces.append(face)
+					faces.append(face)
 
-			obj.FaceCompound = Part.makeCompound(faces)
-			shell = Part.Shell(faces)
-			obj.Shape = shell.removeSplitter()
-			self.sync_legacy_properties(obj)
-			# obj.Base.ViewObject.Visibility = False
-			# obj.Base.ViewObject.LineColor = (1.00,0.00,0.00)
-			obj.Base.ViewObject.LineWidth = .5
-
-			FreeCAD.ActiveDocument.removeObject(base_obj.Name)
+				obj.FaceCompound = Part.makeCompound(faces)
+				shell = Part.Shell(faces)
+				obj.Shape = shell.removeSplitter()
+				self.sync_legacy_properties(obj)
+				# obj.Base.ViewObject.Visibility = False
+				# obj.Base.ViewObject.LineColor = (1.00,0.00,0.00)
+				obj.Base.ViewObject.LineWidth = .5
+			except Exception as err:
+				FreeCAD.Console.PrintError(f"Roof: {err}\n")
 		else:
 			return
 
